@@ -1,0 +1,19 @@
+.initial_head_section_one {
+  margin: 50px auto;
+  display: flex;
+  width: 400px;
+  justify-content: space-evenly;
+}
+
+.initial_head_section_two {
+  display: none;
+}
+
+.none_display_btn {
+  display: none;
+}
+
+.loader {
+  width: 100px;
+  margin: 300px auto;
+}
