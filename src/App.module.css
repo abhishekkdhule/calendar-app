@@ -1,3 +1,7 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
 .initial_head_section_one {
   margin: 50px auto;
   display: flex;
@@ -16,4 +20,12 @@
 .loader {
   width: 100px;
   margin: 300px auto;
+}
+
+.no_events {
+  padding: 8px;
+  background-color: #4298df;
+  color: white;
+  text-align: center;
+  border-radius: 10px;
 }

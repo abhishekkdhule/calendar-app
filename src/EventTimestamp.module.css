@@ -1,9 +1,21 @@
 .eventtimestamp_main_container {
-    height: 500px;
+    height: 450px;
     overflow-y: scroll;
+    padding: 0 12px;
+    background-color: rgb(248, 248, 248);
 }
 
 .per_hour {
+    display: flex;
+    align-items: center;
     height: 80px;
-    border-bottom: 1px solid gray;
+    border-bottom: 1px solid rgb(206, 206, 206);
+}
+
+.event_title {
+    color: white;
+    border-radius: 8px;
+    background-color: rgb(32, 148, 243);
+    padding: 5px;
+    margin: 0 5px;
 }
