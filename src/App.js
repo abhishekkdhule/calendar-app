@@ -9,7 +9,7 @@ import { db } from './firebase'
 
 function App() {
   const [events, setEvents] = useState({})
-  const [value, onChange] = useState(new Date());
+  const [value, setSelectedDate] = useState(new Date());
   const [username, setUsername] = useState('')
   const [isLoading, setLoading] = useState(false)
   const [finaUser, setFinalUser] = useState('')
@@ -20,8 +20,8 @@ function App() {
       welcomeSection: "d-none"
     }
   )
-  
-  const [eventForm, setEventForm] = useState({"title": "", "description": "", "date": "", "starttime": "", "duration": "15", "type": "event"})
+
+  const [eventForm, setEventForm] = useState({ "title": "", "description": "", "date": "", "starttime": "", "duration": "15", "type": "event" })
 
   const newUser = () => {
     setHeadStyles({ SectionOne: styles.initial_head_section_two, SectionTwo: styles.initial_head_section_one, loginBtn: "d-none", createBtn: "btn btn-primary", welcomeSection: "d-none" })
@@ -48,12 +48,17 @@ function App() {
           })
             .then((docRef) => {
               localStorage.setItem("cal_username", username)
-              setHeadStyles({ SectionOne: "d-none", SectionTwo: "d-none", welcomeSection: "d-flex justify-content-between m-4" })
-              setLoading(false)
+              setHeadStyles({ SectionOne: "d-none", SectionTwo: "d-none", welcomeSection: "row m-4 mb-1" })
               setFinalUser(username)
+              setLoading(false)
             })
         }
-      });
+        handleDateClick(value)
+      })
+      .catch((error) => {
+        alert("Internal Server Error! Try again later.");
+        setLoading(false)
+      })
 
   }
 
@@ -66,14 +71,21 @@ function App() {
         if (docSnapshot.exists) {
           localStorage.setItem("cal_username", username)
           setFinalUser(username)
-          setHeadStyles({ SectionOne: "d-none", SectionTwo: "d-none", welcomeSection: "d-flex justify-content-between m-4" })
+          setHeadStyles({ SectionOne: "d-none", SectionTwo: "d-none", welcomeSection: "row m-4 mb-1" })
+          handleDateClick(value)
         } else {
           alert("User does not exists!")
+          handleDateClick(value)
         }
+      })
+      .catch((error) => {
+        alert("Internal Server Error! Try again later.");
+        setLoading(false)
       });
   }
 
   const handleDateClick = (value) => {
+    setSelectedDate(value)
     if (username) {
       setLoading(true)
       let localEventDict = {}
@@ -107,21 +119,21 @@ function App() {
     }
   }
 
-  const createNewEvent = (e) => {    
+  const createNewEvent = (e) => {
+    document.getElementById('btn-close').click()
     setLoading(true)
-    console.log(eventForm)
-    if(eventForm['title'].length > 0 && eventForm['date'].length > 0  && eventForm['starttime'].length > 0  && eventForm['duration'].length > 0  && eventForm['type'].length > 0){
-      if(eventForm['title'] > 50) alert("Title should not exceed 50 characters!")
-      else if(eventForm['description'] > 200) alert("Description should not exceed 200 characters!")
+
+    if (eventForm['title'].length > 0 && eventForm['date'].length > 0 && eventForm['starttime'].length > 0 && eventForm['duration'].length > 0 && eventForm['type'].length > 0) {
+      if (eventForm['title'] > 50) alert("Title should not exceed 50 characters!")
+      else if (eventForm['description'] > 200) alert("Description should not exceed 200 characters!")
       else {
         let eventDate = new Date(eventForm['date'])
         let duration = parseInt(eventForm['duration'])
-        // eventDate = new Date(eventDate.getMinutes())
-        eventDate.setMinutes(eventDate.getMinutes()+eventDate.getTimezoneOffset());
-        eventDate.setMinutes(eventDate.getMinutes() + (parseInt(eventForm['starttime'].substring(0,2)))*60 + (parseInt(eventForm['starttime'].substring(3))) )
+        eventDate.setMinutes(eventDate.getMinutes() + eventDate.getTimezoneOffset());
+        eventDate.setMinutes(eventDate.getMinutes() + (parseInt(eventForm['starttime'].substring(0, 2))) * 60 + (parseInt(eventForm['starttime'].substring(3))))
         let endDate = new Date(eventDate)
         endDate.setMinutes(eventDate.getMinutes() + duration)
-        console.log(eventDate.toLocaleString(), endDate.toLocaleString())
+
         db.collection("events").doc().set({
           username: username,
           title: eventForm['title'],
@@ -130,19 +142,20 @@ function App() {
           endtime: endDate,
           type: eventForm['type']
         })
-        .then(()=>{
-          setLoading(false)
-        })
-        .catch((error) => {
-          alert("Internal Server Error, Try again later!");
-          setLoading(false)
-        });
+          .then(() => {
+            setLoading(false)
+            handleDateClick(value)
+          })
+          .catch((error) => {
+            alert("Internal Server Error, Try again later!");
+            setLoading(false)
+          });
       }
     } else {
       alert("Incomplete Details")
     }
   }
-  // console.log(events)
+  
   return (
     <>
       {isLoading ?
@@ -160,37 +173,37 @@ function App() {
                 <div className="modal-content">
                   <div className="modal-header">
                     <h5 className="modal-title" id="exampleModalLabel">Add Event</h5>
-                    <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" className="btn-close" id='btn-close' data-bs-dismiss="modal" aria-label="Close"></button>
                   </div>
                   <div className="modal-body">
                     <div className="mb-3">
                       <label htmlFor="title" className="form-label">Title</label>
-                      <input type="text" onChange={(e)=>setEventForm({...eventForm, "title": e.target.value.trim()})} className="form-control" id="title" />
+                      <input type="text" onChange={(e) => setEventForm({ ...eventForm, "title": e.target.value.trim() })} className="form-control" id="title" />
                     </div>
                     <div className="mb-3">
                       <label htmlFor="Description" className="form-label">Description</label>
-                      <textarea className="form-control" onChange={(e)=>setEventForm({...eventForm, "description": e.target.value.trim()})} id="description" />
+                      <textarea className="form-control" onChange={(e) => setEventForm({ ...eventForm, "description": e.target.value.trim() })} id="description" />
                     </div>
                     <div className="mb-3">
                       <label htmlFor="date" className="form-label">Type</label>
-                        <select className="form-select" id="type" onChange={(e)=>setEventForm({...eventForm, "type": e.target.value})}>
-                          <option value="event" selected>Event</option>
-                          <option value="task">Task</option>
-                          <option value="reminder">Reminder</option>
-                        </select>
+                      <select className="form-select" id="type" onChange={(e) => setEventForm({ ...eventForm, "type": e.target.value })}>
+                        <option value="event" selected>Event</option>
+                        <option value="task">Task</option>
+                        <option value="reminder">Reminder</option>
+                      </select>
                     </div>
                     <div className="mb-3">
                       <label htmlFor="date" className="form-label">Date</label>
-                      <input type="date" className="form-control" id="date" onChange={(e)=>setEventForm({...eventForm, "date": e.target.value})} />
+                      <input type="date" className="form-control" id="date" onChange={(e) => setEventForm({ ...eventForm, "date": e.target.value })} />
                     </div>
                     <div className="mb-3 d-flex justify-content-between">
                       <div className="w-50">
                         <label htmlFor="time" className="form-label">StartTime</label>
-                        <input type="time" className="form-control" id="time" onChange={(e)=>setEventForm({...eventForm, "starttime": e.target.value})} />
+                        <input type="time" className="form-control" id="time" onChange={(e) => setEventForm({ ...eventForm, "starttime": e.target.value })} />
                       </div>
                       <div>
                         <label htmlFor="duration" className="form-label">Duration</label>
-                        <select className="form-select" id="duration" onChange={(e)=>setEventForm({...eventForm, "duration": e.target.value})}>
+                        <select className="form-select" id="duration" onChange={(e) => setEventForm({ ...eventForm, "duration": e.target.value })}>
                           <option value="15" selected>15 Min</option>
                           <option value="30">30 Min</option>
                           <option value="45">45 Min</option>
@@ -201,18 +214,24 @@ function App() {
                   </div>
                   <div className="modal-footer">
                     <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" className="btn btn-primary" onClick={(e)=>createNewEvent(e)}>Save changes</button>
+                    <button type="button" className="btn btn-primary" onClick={(e) => createNewEvent(e)}>Save changes</button>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className={headStyles.welcomeSection}>
-              <h4 className="">{value.toDateString()}</h4>
-              <h3 className="">Hello {username}!!!</h3>
-              <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Event</button>
+              <div className="col-sm-3 text-center p-2">
+                <h4 className="">{value.toDateString()}</h4>
+              </div>
+              <div className="col-sm-6 text-center p-2">
+                <h3 className="">Hello {username}!!!</h3>
+              </div>
+              <div className="col-sm-3 text-center p-2">
+                <button className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Add Event</button>
+              </div>
             </div>
-            <div className="d-flex ">
+            <div className="d-flex">
               <div className={headStyles.SectionOne}>
                 <button className="btn btn-primary" onClick={() => newUser()}>
                   New User
@@ -222,25 +241,27 @@ function App() {
                 </button>
               </div>
               <div className={headStyles.SectionTwo}>
-                <input type="text" className="" onChange={(e) => setUsername(e.target.value.trim())} value={username} />
+                <input type="text" className="" placeholder="Username" onChange={(e) => setUsername(e.target.value.trim())} value={username} />
                 <button className={headStyles.createBtn} onClick={() => createUser()}>Create User</button>
                 <button className={headStyles.loginBtn} onClick={() => loginUser()}>Login</button>
               </div>
             </div>
             {finaUser ? (
               <div className="row ms-2 me-2 mt-3">
-                <div className="col-md-3 p-2">
+                <div className="col-md-3 p-2 pt-4">
                   <h5 className="text-center mb-4 p-3 bg-primary text-white shadow-lg">Calendar</h5>
-                  <Calendar
-                    onChange={(value, event) => handleDateClick(value)}
-                    value={value}
-                  />
+                  <div className="d-flex justify-content-center">
+                    <Calendar
+                      onChange={(value, event) => handleDateClick(value)}
+                      value={value}
+                    />
+                  </div>
                 </div>
-                <div className="col-md-6 p-0 pt-2">
+                <div className="col-md-6 p-0 pt-4">
                   <h5 className="text-center mb-4 p-3 bg-light shadow-lg">Timeline of Events</h5>
-                  <EventTimestamp allevents={events} />
+                  <EventTimestamp allevents={events} className="m-auto" />
                 </div>
-                <div className="col-md-3 p-2">
+                <div className="col-md-3 p-2  pt-4">
                   <h5 className="text-center mb-4 p-3 text-white bg-primary shadow-lg">All Events </h5>
                   {
                     Object.keys(events).length === 0 ? (<div className={styles.no_events}>No events yet!</div>) : (
