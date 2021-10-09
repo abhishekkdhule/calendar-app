@@ -144,6 +144,7 @@ function App() {
         })
           .then(() => {
             setLoading(false)
+            setEventForm({ "title": "", "description": "", "date": "", "starttime": "", "duration": "15", "type": "event" })
             handleDateClick(value)
           })
           .catch((error) => {
@@ -152,6 +153,7 @@ function App() {
           });
       }
     } else {
+      setLoading(false)
       alert("Incomplete Details")
     }
   }
